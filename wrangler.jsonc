@@ -1,0 +1,43 @@
+// Cloudflare Worker configuration. `wrangler deploy` reads this file.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "chotu",
+  "main": "src/index.ts",
+  "compatibility_date": "2024-09-23",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // The dashboard (public/) is served as static files by the same Worker.
+  "assets": { "directory": "./public" },
+
+  // 24/7 heartbeat: every 5 minutes the worker processes a small batch of work.
+  // 09:00 + 10:00 UTC — the daily brief + recommendation refill at 11:00 Amsterdam (the code picks the one
+  //   that is 11:00 local, so it stays 11:00 through daylight-saving changes).
+  // 03:00 UTC on Mondays — weekly refresh of the IND sponsor register.
+  "triggers": { "crons": ["*/5 * * * *", "0 9 * * *", "0 10 * * *", "0 3 * * 1"] },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "chotu",
+      // Fill this in after running: npx wrangler d1 create chotu
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // Cloudflare's own hosted models (embeddings + cheap classification). Free daily allowance.
+  "ai": { "binding": "AI" },
+
+  // Non-secret config. Secrets (API keys) go in via `wrangler secret put NAME`.
+  "vars": {
+    "GEMINI_MODEL": "gemini-3.5-flash",
+    "GEMINI_LITE_MODEL": "gemini-3.5-flash-lite",
+    "WORKERS_AI_TEXT_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+    "TIMEZONE": "Europe/Amsterdam",
+    "RECOMMENDATION_SLOTS": "2",
+    "LLM_DAILY_CALL_BUDGET": "600",
+    "TICK_BATCH_SIZE": "6",
+    // Set to your deployed URL after the first `wrangler deploy`
+    "PUBLIC_URL": "https://chotu.<your-subdomain>.workers.dev"
+  }
+}

@@ -1,0 +1,41 @@
+# Preparation tracker. Log progress from Telegram (/log neetcode 2) or just tell the bot ("did 3 neetcode problems").
+# Targets: daily_target, weekly_target, or total_target + deadline (Chotu computes the daily pace).
+# TODO (you): adjust the targets — these are starting guesses.
+
+items:
+  - id: neetcode
+    type: leetcode
+    title: NeetCode (neetcode.io)
+    unit: problems
+    weekly_target: 10
+
+  - id: tensortonic
+    type: practice
+    title: TensorTonic ML problems (tensortonic.com)
+    unit: problems
+    weekly_target: 5
+
+  - id: ml-interviews
+    type: book
+    title: ML Interviews Book (huyenchip.com/ml-interviews-book)
+    unit: chapters
+    weekly_target: 1
+
+  - id: ai-engineering
+    type: book
+    title: AI Engineering (Chip Huyen)
+    unit: chapters
+    total_target: 10
+    deadline: "2027-01-31"
+
+  - id: dutch
+    type: course
+    title: Dutch (learndutch.org)
+    unit: lessons
+    weekly_target: 3
+
+  - id: outreach
+    type: other
+    title: Outreach messages sent
+    unit: messages
+    weekly_target: 5

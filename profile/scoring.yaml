@@ -1,0 +1,120 @@
+# How jobs are ranked.
+
+# Two axes, combined into one ranking score.
+weights:
+  fit: 0.5        # am I a strong applicant?
+  interest: 0.5   # do I want this?
+
+# Stage-1 keyword ranking (free, no LLM). Title match = 3x weight.
+# Only jobs scoring >= min_keyword_score get an LLM call. Tune these to YOUR field.
+keywords:
+  # Substring match on title + description (title counts 3x). Core: CV, remote sensing, deep learning, agents.
+  positive:
+    computer vision: 3
+    remote sensing: 3
+    earth observation: 3
+    geospatial: 3
+    satellite: 2
+    deep learning: 3
+    machine learning: 3
+    ml engineer: 3
+    ai engineer: 3
+    research engineer: 3
+    research scientist: 3
+    applied scientist: 3
+    perception: 3
+    robotics: 3
+    robot learning: 3
+    embodied: 3
+    manipulation: 2
+    humanoid: 2
+    vision-language: 2
+    reinforcement learning: 2
+    autonomous: 2
+    drone: 2
+    world model: 3
+    physics-informed: 3
+    foundation model: 2
+    uncertainty: 1
+    llm: 3
+    large language model: 3
+    fine-tuning: 2
+    post-training: 2
+    nlp: 2
+    generative ai: 2
+    agentic: 3
+    ai agent: 3          # also matches "AI agents"; plain "agents" is avoided (support/travel agents)
+    multi-agent: 2
+    langgraph: 2
+    langchain: 2
+    data scientist: 2
+    pytorch: 2
+    python: 1
+    phd: 2
+    graduate: 1
+    junior: 2
+    founding engineer: 3
+  # Applied if found anywhere in title or description, so keep these to phrases that mean the role itself.
+  negative:
+    sales: 3
+    account executive: 5
+    recruiter: 5
+    marketing: 2
+    legal counsel: 5
+    frontend developer: 4
+    front-end developer: 4
+    full stack developer: 4
+    fullstack developer: 4
+    backend developer: 3
+    salesforce: 4
+    sap consultant: 4
+
+min_keyword_score: 2
+
+# ── career-ops scoring (github.com/career-ops-hq/career-ops) — runs alongside fit/interest, same LLM call ──
+# Five 1-5 dimensions (CV match, North Star = your archetypes, comp, culture, red flags) → one global 1-5 score.
+# Bands: Strong apply ≥4.5 · Apply ≥4.0 · Maybe ≥3.0 · Skip <3.0. A suspicious (ghost) posting → "Research first".
+career_ops:
+  weight: 0.5                    # ranking = 50% Chotu fit/interest + 50% career-ops global
+  recommend_min_band: maybe      # daily recommendations never include "Skip" (<3.0); Apply band is preferred
+  alert_min_band: apply          # instant alerts only for 4.0+
+  research_min_band: strong_apply  # automatic company dossier at 4.5+ (or the old combined ≥ research_threshold)
+
+# Your North Star. A role that matches none of these scores North Star 1 — that's a useful signal, not a bug.
+archetypes:
+  - { name: Robotics / robot learning, signals: [robot, manipulation, embodied, perception, sim2real, VLA, humanoid, ROS, control, autonomy] }
+  - { name: LLM engineer / researcher, signals: [LLM, large language model, fine-tuning, post-training, RLHF, evals, inference, pretraining, NLP] }
+  - { name: AI agents engineer, signals: [agent, agentic, tool use, orchestration, multi-agent, workflow, LangGraph, function calling, RAG] }
+  - { name: Computer vision / perception ML, signals: [computer vision, image, video, detection, segmentation, 3D, multimodal] }
+  - { name: Earth observation / geospatial ML, signals: [remote sensing, satellite, earth observation, geospatial, SAR, drone, climate] }
+  - { name: ML research engineer / scientist, signals: [research engineer, research scientist, applied scientist, publications, world models, physics-informed] }
+  - { name: Founding / early ML engineer at a startup, signals: [founding engineer, first ML hire, seed, series A, 0 to 1, small team] }
+
+# Culture you want (from goals.md). Evidence AGAINST these caps culture at 2/5; no evidence = unknown, not 3.
+culture_screen:
+  require:
+    - small team (roughly 10-50 people) or a small autonomous team inside a larger company
+    - strong technical people to learn from (research/engineering depth, senior ICs, publications, open source)
+    - fast-moving, low bureaucracy, ships quickly
+    - real ML / AI work, not mostly frontend/backend or maintenance of legacy systems
+    - can sponsor a Dutch highly-skilled-migrant visa or is open to relocation
+
+# Combined score at/above which Chotu automatically researches the company (dossier + outreach).
+research_threshold: 7
+
+# LLM scoring calls per 5-minute tick (12/hour * 2 = up to ~576/day, capped by LLM_DAILY_CALL_BUDGET).
+llm_scores_per_tick: 2
+
+# Alert agent — instant pings (via the alert bot) for FRESH postings from email alerts and ATS feeds.
+# Applying in the first 24-48h matters, so these skip the 2-per-day queue. Keep them rare.
+alerts:
+  enabled: true
+  min_keyword_score: 4   # free pre-filter
+  min_score: 6.5         # LLM combined score needed to ping
+  max_per_day: 8
+  max_age_days: 3
+
+# Recommender agent — picks the daily 2 from everything scored, using your past apply/skip reasons.
+recommender:
+  rerank_with_llm: true
+  candidates: 8

@@ -1,0 +1,175 @@
+% Chotu CV template — YOUR LaTeX, used as the base for every tailored CV.
+% Chotu replaces only the three %%CHOTU:...%% marker lines below with content selected from cv.yaml.
+% Everything else (header, education, certificates) is printed exactly as written here — edit freely.
+\documentclass[10pt, letterpaper]{article}
+
+% Packages:
+\usepackage[
+    ignoreheadfoot,
+    top=1.0 cm,
+    bottom=1.0 cm,
+    left=1.0 cm,
+    right=1.0 cm,
+    footskip=1.0 cm
+]{geometry}
+\usepackage{XCharter}
+\usepackage{titlesec}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage[dvipsnames]{xcolor}
+\definecolor{primaryColor}{RGB}{0, 18, 255}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage[
+    pdftitle={Your Name - CV},
+    pdfauthor={Your Name},
+    pdfcreator={Chotu},
+    colorlinks=true,
+    urlcolor=primaryColor
+]{hyperref}
+\usepackage[pscoord]{eso-pic}
+\usepackage{calc}
+\usepackage{bookmark}
+\usepackage{lastpage}
+\usepackage{changepage}
+\usepackage{paracol}
+\usepackage{ifthen}
+\usepackage{needspace}
+\usepackage{iftex}
+
+\ifPDFTeX
+    \input{glyphtounicode}
+    \pdfgentounicode=1
+    \usepackage[utf8]{inputenc}
+    \usepackage{lmodern}
+\fi
+
+\AtBeginEnvironment{adjustwidth}{\partopsep0pt}
+\pagestyle{empty}
+\setcounter{secnumdepth}{0}
+\setlength{\parindent}{0pt}
+\setlength{\topskip}{0pt}
+\setlength{\columnsep}{0cm}
+\makeatletter
+
+\titleformat{\section}{\needspace{4\baselineskip}\bfseries\large}{}{0pt}{}[\vspace{1pt}\titlerule]
+
+\titlespacing{\section}{-1pt}{0.2 cm}{0.1 cm}
+
+\renewcommand\labelitemi{$\circ$}
+\newenvironment{highlights}{
+    \begin{itemize}[
+        topsep=0.05 cm,
+        parsep=0.05 cm,
+        partopsep=0pt,
+        itemsep=0pt,
+        leftmargin=0.4 cm + 10pt
+    ]
+}{
+    \end{itemize}
+}
+
+\newenvironment{highlightsforbulletentries}{
+    \begin{itemize}[
+        topsep=0.10 cm,
+        parsep=0.10 cm,
+        partopsep=0pt,
+        itemsep=0pt,
+        leftmargin=10pt
+    ]
+}{
+    \end{itemize}
+}
+
+\newenvironment{onecolentry}{
+    \begin{adjustwidth}{
+        0.2 cm + 0.00001 cm
+    }{
+        0.2 cm + 0.00001 cm
+    }
+}{
+    \end{adjustwidth}
+}
+
+\newenvironment{twocolentry}[2][]{
+    \onecolentry
+    \def\secondColumn{#2}
+    \setcolumnwidth{\fill, 5.5 cm}
+    \begin{paracol}{2}
+}{
+    \switchcolumn \raggedleft \secondColumn
+    \end{paracol}
+    \endonecolentry
+}
+
+\newenvironment{header}{
+    \setlength{\topsep}{0pt}\par\kern\topsep\centering\linespread{1.15}
+}{
+    \par\kern\topsep
+}
+
+\let\hrefWithoutArrow\href
+\renewcommand{\href}[2]{\hrefWithoutArrow{#1}{#2}}
+
+\begin{document}
+    \newcommand{\AND}{\unskip
+        \cleaders\copy\ANDbox\hskip\wd\ANDbox
+        \ignorespaces
+    }
+    \newsavebox\ANDbox
+    \sbox\ANDbox{}
+
+    \begin{onecolentry}
+    \begin{minipage}[t]{0.30\linewidth}
+        \textbf{\fontsize{16 pt}{16 pt}\selectfont Your Name}
+    \end{minipage}%
+    \hfill
+    \begin{minipage}[t]{0.69\linewidth}
+        \raggedleft\small
+        \mbox{\hrefWithoutArrow{mailto:you@example.com}{you@example.com}}%
+        \kern 0.35 cm%
+        \mbox{+00 000 000 000}
+
+        \mbox{\hrefWithoutArrow{https://your-site.example}{your-site.example}}%
+        \kern 0.35 cm%
+        \mbox{\hrefWithoutArrow{https://linkedin.com/in/your-handle}{linkedin.com/in/your-handle}}%
+        \kern 0.35 cm%
+        \mbox{\hrefWithoutArrow{https://github.com/your-handle}{github.com/your-handle}}
+    \end{minipage}
+    \end{onecolentry}
+
+    \vspace{0.3 cm - 0.3 cm}
+
+    \section{Education}
+
+        \begin{twocolentry}{
+        \textit{Example City, Europe}
+
+        \textit{Sep 2025 -- Aug 2027 (expected)}}
+            \textbf{Example University}
+
+            \textit{MSc. Data Science}
+        \end{twocolentry}
+
+        \vspace{0.05 cm}
+        \begin{onecolentry}
+            \begin{highlights}
+                \item \textbf{GPA:} 8.0/10
+                \item \textbf{Coursework:} Machine Learning, Data Mining, Optimization, NLP, Computer Vision
+            \end{highlights}
+        \end{onecolentry}
+
+%%CHOTU:EXPERIENCE%%
+
+%%CHOTU:PROJECTS%%
+
+    \section{Skills}
+
+        \begin{onecolentry}
+%%CHOTU:SKILLS%%
+
+            \vspace{0.08 cm}
+            \textbf{Certificates:} Example Certificate $|$ Another Certificate
+        \end{onecolentry}
+
+\end{document}

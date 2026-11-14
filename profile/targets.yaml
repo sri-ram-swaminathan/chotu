@@ -1,0 +1,219 @@
+# Companies to track + pages to watch. Everything runs once every 24 hours.
+#
+# companies: anything with a public job board (ATS) is polled every `fetch_every_hours`.
+#   boards.greenhouse.io/<slug> → greenhouse     jobs.lever.co/<slug> → lever (lever-eu for jobs.eu.lever.co)
+#   jobs.ashbyhq.com/<slug>     → ashby          <slug>.recruitee.com → recruitee
+#   <slug>.jobs.personio.de     → personio       apply.workable.com/<slug> → workable
+#   <tenant>.wd3.myworkdayjobs.com/<site> → workday, slug "tenant.wd3/site" (+ optional `search` terms)
+# Companies WITHOUT a readable board are still tracked: set research: true for a dossier + outreach email,
+# and subscribe your alerts inbox to their job alerts (see "Email alerts" at the bottom).
+# Every ATS slug below was verified on 2026-11-11.
+
+fetch_every_hours: 24
+
+companies:
+  # ── Earth observation, drones, space (example: close to an Earth-observation background) ──
+  - { name: Robin Radar, domain: robinradar.com, ats: ashby, slug: robin-radar, region: delft, tags: [drones, radar, computer-vision] }
+  - { name: ISISPACE, domain: isispace.nl, ats: recruitee, slug: isispace, region: delft, tags: [space, satellites] }
+  - { name: cosine, domain: cosine.eu, ats: personio, slug: cosine, region: sassenheim, tags: [space, remote-sensing, machine-vision] }
+  - { name: Overstory, domain: overstory.com, ats: ashby, slug: overstory, region: amsterdam, tags: [earth-observation, climate] }
+  - { name: ICEYE, domain: iceye.com, ats: ashby, slug: iceye, region: remote-eu, tags: [earth-observation, sar, space] }
+  - { name: Planet, domain: planet.com, ats: greenhouse, slug: planetlabs, region: berlin, tags: [earth-observation, satellites] }
+  - { name: Beyond Weather, region: utrecht, tags: [climate, weather, ai], funded_stage: seed, research: true }
+  - { name: Satelligence, domain: satelligence.com, region: utrecht, tags: [earth-observation, climate], research: true }
+  - { name: Ellipsis Drive, domain: ellipsis-drive.com, region: amsterdam, tags: [earth-observation, geospatial], research: true }
+  - { name: Spheer.ai, domain: spheer.ai, region: netherlands, tags: [earth-observation, foundation-models], research: true }
+  - { name: Atmos UAV, region: delft, tags: [drones, geospatial], research: true }
+  - { name: Avular, domain: avular.com, region: eindhoven, tags: [drones, robotics], research: true }
+  - { name: NEO, domain: neo.nl, region: amersfoort, tags: [earth-observation, geospatial] }
+
+  # ── Robotics, autonomous driving, world models ──
+  - { name: Wayve, domain: wayve.ai, ats: ashby, slug: wayve, region: london, tags: [autonomous-driving, world-models] }
+  - { name: Sereact, domain: sereact.ai, ats: ashby, slug: sereact, region: stuttgart, tags: [robotics, ai] }
+  - { name: RobCo, domain: robco.de, ats: ashby, slug: robco, region: munich, tags: [robotics] }
+  - { name: 1X, domain: 1x.tech, ats: ashby, slug: 1x, region: remote-eu, tags: [robotics, humanoids, world-models] }
+  - { name: Helsing, domain: helsing.ai, ats: greenhouse, slug: helsing, region: munich, tags: [ai, defence, drones] }
+  - { name: Prodrive Technologies, domain: prodrive-technologies.com, region: eindhoven, tags: [robotics, hardware] }
+  - { name: Lely, domain: lely.com, region: maassluis, tags: [robotics, agriculture] }
+
+  # ── Health & climate ──
+  - { name: Owkin, domain: owkin.com, ats: ashby, slug: owkin, region: paris, tags: [health, ai] }
+  - { name: Pacmed, domain: pacmed.ai, ats: recruitee, slug: pacmed, region: amsterdam, tags: [health, ai] }
+  - { name: Thirona, domain: thirona.eu, region: nijmegen, tags: [health, computer-vision] }
+  - { name: Dexter Energy, domain: dexterenergy.ai, region: amsterdam, tags: [climate, energy, forecasting] }
+  - { name: Deltares, domain: deltares.nl, region: delft, tags: [climate, water, research] }
+  - { name: TNO, domain: tno.nl, region: netherlands, tags: [research, applied-ai] }
+
+  # ── AI / agents scale-ups ──
+  - { name: Cohere, domain: cohere.com, ats: ashby, slug: cohere, region: remote-eu, tags: [llm] }
+  - { name: ElevenLabs, domain: elevenlabs.io, ats: ashby, slug: elevenlabs, region: remote-eu, tags: [ai, audio] }
+  - { name: LangChain, domain: langchain.com, ats: ashby, slug: langchain, region: remote, tags: [agents, devtools] }
+  - { name: n8n, domain: n8n.io, ats: ashby, slug: n8n, region: berlin, tags: [automation, agents] }
+  - { name: Synthesia, domain: synthesia.io, ats: ashby, slug: synthesia, region: amsterdam, tags: [ai, video] }
+  - { name: DeepL, domain: deepl.com, ats: ashby, slug: deepl, region: cologne, tags: [ai, nlp] }
+  - { name: Hugging Face, domain: huggingface.co, ats: workable, slug: huggingface, region: remote, tags: [ai, open-source] }
+  - { name: Weaviate, domain: weaviate.io, region: amsterdam, tags: [vector-db, ai] }
+
+  # ── Big Dutch tech & corporates ──
+  - { name: Philips, domain: philips.com, ats: workday, slug: philips.wd3/jobs-and-careers, region: eindhoven, tags: [health, corporate] }
+  - { name: Shell, domain: shell.com, ats: workday, slug: shell.wd3/ShellCareers, region: amsterdam, tags: [energy, corporate] }
+  - { name: ING, domain: ing.com, ats: workday, slug: ing.wd3/ICSGBLCOR, region: amsterdam, tags: [bank, corporate] }
+  - { name: ASML, domain: asml.com, region: veldhoven, tags: [semiconductors, corporate] }        # no public API → email alerts
+  - { name: Rabobank, domain: rabobank.nl, region: utrecht, tags: [bank, corporate] }            # no public API → email alerts
+  - { name: ABN AMRO, domain: abnamro.nl, region: amsterdam, tags: [bank, corporate] }           # no public API → email alerts
+  - { name: TomTom, domain: tomtom.com, ats: lever-eu, slug: tomtom, region: amsterdam, tags: [maps, autonomous-driving] }
+  - { name: Adyen, domain: adyen.com, ats: greenhouse, slug: adyen, region: amsterdam, tags: [fintech] }
+  - { name: Mollie, domain: mollie.com, ats: ashby, slug: mollie, region: amsterdam, tags: [fintech] }
+  - { name: bunq, domain: bunq.com, ats: recruitee, slug: bunq, region: amsterdam, tags: [fintech, ai] }
+  - { name: IMC, domain: imc.com, ats: greenhouse, slug: imc, region: amsterdam, tags: [trading] }
+  - { name: bol, domain: bol.com, ats: greenhouse, slug: bolcom, region: utrecht, tags: [e-commerce] }
+  - { name: Miro, domain: miro.com, ats: ashby, slug: miro, region: amsterdam, tags: [saas] }
+  - { name: Elastic, domain: elastic.co, ats: greenhouse, slug: elastic, region: amsterdam, tags: [search, infra] }
+  - { name: Catawiki, domain: catawiki.com, ats: greenhouse, slug: catawiki, region: amsterdam, tags: [marketplace] }
+
+
+  # ── From career-ops' portal list (github.com/career-ops-hq/career-ops), boards verified live 2026-11-13 ──
+  #    Mostly AI labs, LLM/agent companies and EU tech. Non-EU roles are dropped by the location filter for free.
+  # AI Labs & LLM providers
+  - { name: Anthropic, ats: greenhouse, slug: anthropic, tags: [llm, ai-lab, agents, career-ops] }
+  # Voice AI & Conversational AI
+  - { name: PolyAI, ats: greenhouse, slug: polyai, tags: [voice-ai, agents, career-ops] }
+  - { name: Intercom, ats: greenhouse, slug: intercom, tags: [voice-ai, agents, career-ops] }
+  - { name: Hume AI, ats: greenhouse, slug: humeai, tags: [voice-ai, agents, career-ops] }
+  - { name: Deepgram, ats: ashby, slug: deepgram, tags: [voice-ai, agents, career-ops] }
+  - { name: Vapi, ats: ashby, slug: vapi, tags: [voice-ai, agents, career-ops] }
+  - { name: Bland AI, ats: ashby, slug: bland, tags: [voice-ai, agents, career-ops] }
+  # AI-native platforms (FDE/SA teams)
+  - { name: Airtable, ats: greenhouse, slug: airtable, tags: [ai-platform, career-ops] }
+  - { name: Vercel, ats: greenhouse, slug: vercel, tags: [ai-platform, career-ops] }
+  - { name: Temporal, ats: ashby, slug: temporal, tags: [ai-platform, career-ops] }
+  - { name: Arize AI, ats: greenhouse, slug: arizeai, tags: [llmops, career-ops] }
+  - { name: RunPod, ats: ashby, slug: runpod, tags: [gpu, infra, career-ops] }
+  - { name: "Weights & Biases (CoreWeave)", ats: greenhouse, slug: coreweave, tags: [mlops, infra, career-ops] }
+  - { name: Glean, ats: greenhouse, slug: gleanwork, tags: [llm, search, agents, career-ops] }
+  # Contact Center AI & CX
+  - { name: Ada, ats: greenhouse, slug: ada18, tags: [agents, cx, career-ops] }
+  - { name: Sierra, ats: ashby, slug: sierra, tags: [agents, llm, career-ops] }
+  - { name: Decagon, ats: ashby, slug: decagon, tags: [agents, llm, career-ops] }
+  # AI infra & LLMOps
+  - { name: Speechmatics, ats: greenhouse, slug: speechmatics, tags: [llm, infra, career-ops] }
+  # No-Code/Low-Code & Automation
+  - { name: Zapier, ats: ashby, slug: zapier, tags: [automation, agents, career-ops] }
+  - { name: Boomi, ats: greenhouse, slug: boomilp, tags: [automation, agents, career-ops] }
+  # Ashby-based (Playwright direct)
+  - { name: Pinecone, ats: ashby, slug: pinecone, tags: [vector-db, llm, career-ops] }
+  # Lever-based (Playwright direct)
+  - { name: Mistral AI, ats: ashby, slug: mistral.ai, tags: [llm, ai-lab, career-ops] }
+  - { name: Palantir, ats: lever, slug: palantir, tags: [ai, career-ops] }
+  # Canada / Vancouver tech & AI
+  - { name: Later, ats: greenhouse, slug: later, tags: [canada, career-ops] }
+  - { name: Safari AI, ats: greenhouse, slug: safariai, tags: [canada, career-ops] }
+  - { name: Hootsuite, ats: greenhouse, slug: hootsuite, tags: [canada, career-ops] }
+  - { name: Klue, ats: ashby, slug: klue, tags: [canada, career-ops] }
+  - { name: Glacis AI, ats: ashby, slug: glacis-ai, tags: [canada, career-ops] }
+  - { name: Semios, ats: workable, slug: semios, tags: [canada, career-ops] }
+  # European tech (EMEA-friendly)
+  - { name: Attio, ats: ashby, slug: attio, tags: [ai, career-ops] }
+  - { name: Tinybird, ats: lever, slug: tinybird, tags: [ai, career-ops] }
+  - { name: Travelperk, ats: ashby, slug: perk, tags: [ai, career-ops] }
+  - { name: Channable, ats: recruitee, slug: channable, tags: [ai, career-ops] }
+  # DACH AI labs & frontier model providers
+  - { name: Aleph Alpha, ats: ashby, slug: AlephAlpha, tags: [llm, ai-lab, career-ops] }
+  - { name: Black Forest Labs, ats: ashby, slug: black-forest-labs, tags: [generative-ai, ai-lab, career-ops] }
+  # DACH enterprise & SaaS (AI-heavy)
+  - { name: Celonis, ats: greenhouse, slug: celonis, tags: [ai, career-ops] }
+  - { name: Contentful, ats: greenhouse, slug: contentful, tags: [ai, career-ops] }
+  - { name: HelloFresh, ats: greenhouse, slug: hellofresh, tags: [ai, career-ops] }
+  # DACH fintech
+  - { name: N26, ats: greenhouse, slug: n26, tags: [fintech, career-ops] }
+  - { name: Trade Republic, ats: greenhouse, slug: traderepublicbank, tags: [fintech, career-ops] }
+  - { name: SumUp, ats: greenhouse, slug: sumup, tags: [fintech, career-ops] }
+  - { name: Qonto, ats: ashby, slug: qonto, tags: [fintech, career-ops] }
+  # DACH logistics / mobility
+  - { name: Forto, ats: ashby, slug: forto, tags: [ai, career-ops] }
+  # Switzerland / Austria AI
+  - { name: Scandit, ats: greenhouse, slug: scandit, tags: [computer-vision, career-ops] }
+  - { name: Cradle, ats: ashby, slug: cradlebio, tags: [ai, biology, career-ops] }
+  # France AI ecosystem
+  - { name: Photoroom, ats: ashby, slug: photoroom, tags: [computer-vision, generative-ai, career-ops] }
+  - { name: Pigment, ats: lever, slug: pigment, tags: [ai, career-ops] }
+  - { name: Diabolocom, ats: lever-eu, slug: diabolocom, tags: [ai, career-ops] }
+  # UK & Ireland AI (EU-friendly hiring)
+  - { name: Isomorphic Labs, ats: greenhouse, slug: isomorphiclabs, tags: [ai-lab, health, career-ops] }
+  - { name: PhysicsX, ats: greenhouse, slug: physicsx, tags: [physics-ml, simulation, career-ops] }
+  - { name: Stability AI, ats: greenhouse, slug: stabilityai, tags: [generative-ai, career-ops] }
+  - { name: Faculty, ats: ashby, slug: faculty, tags: [applied-ai, career-ops] }
+  - { name: Causaly, ats: ashby, slug: causaly, tags: [llm, biology, career-ops] }
+  # Nordics AI
+  - { name: Lovable, ats: ashby, slug: lovable, tags: [llm, agents, devtools, career-ops] }
+  - { name: Legora, ats: ashby, slug: legora, tags: [llm, legal, career-ops] }
+  - { name: Spotify, ats: lever, slug: spotify, tags: [ai, career-ops] }
+  # ATS migration refreshes (2026-08): boards moved off Greenhouse/Lever
+  - { name: Hotjar, ats: lever, slug: contentsquare, tags: [ai, career-ops] }
+  - { name: Doist, ats: ashby, slug: todoist-inc, tags: [ai, career-ops] }
+  # Denmark AI / tech
+  - { name: Corti, ats: ashby, slug: corti, tags: [llm, health, career-ops] }
+  - { name: Pleo, ats: ashby, slug: pleo, tags: [ai, career-ops] }
+  # Iberia AI
+  - { name: Amplemarket, ats: greenhouse, slug: amplemarket, tags: [ai, career-ops] }
+  # AI / Developer Tools
+  - { name: Perplexity, ats: ashby, slug: perplexity, tags: [llm, search, career-ops] }
+  - { name: Clay Labs, ats: ashby, slug: claylabs, tags: [ai, career-ops] }
+  - { name: Runway, ats: ashby, slug: runway-ml, tags: [generative-ai, video, career-ops] }
+  - { name: WorkOS, ats: ashby, slug: workos, tags: [ai, career-ops] }
+  # Dev Tools / AI Infra (DevRel, SA, FDE focus)
+  - { name: Supabase, ats: ashby, slug: supabase, tags: [llm, infra, career-ops] }
+  - { name: Resend, ats: ashby, slug: resend, tags: [llm, infra, career-ops] }
+  - { name: Clerk, ats: ashby, slug: clerk, tags: [llm, infra, career-ops] }
+  - { name: Inngest, ats: ashby, slug: inngest, tags: [llm, infra, career-ops] }
+  - { name: PlanetScale, ats: greenhouse, slug: planetscale, tags: [llm, infra, career-ops] }
+
+# Site-wide job boards (many companies each), from career-ops' supported boards. Read every fetch_every_hours.
+# Only postings that pass the free filters (location, seniority, no internships, keywords) are stored.
+# Providers: arbeitnow · landingjobs · speedrun · jobicy (+ geo) · startupjobs · hackernews — see src/sources/boards.ts.
+boards:
+  - { provider: arbeitnow, name: "Arbeitnow (EU/DACH)", pages: 3 }
+  - { provider: landingjobs, name: "Landing.jobs (Europe)", pages: 2 }
+  - { provider: speedrun, name: "a16z speedrun startups", pages: 3 }
+  - { provider: jobicy, name: "Jobicy — Netherlands", geo: netherlands }
+  - { provider: jobicy, name: "Jobicy — Europe", geo: europe }
+  - { provider: startupjobs, name: "Startup Jobs" }
+  - { provider: hackernews, name: "HN Who is hiring" }
+
+# Pages without an API, re-read every 24 h. Only a CHANGED page costs an LLM call.
+# Verified readable on 2026-11-11 with a plain fetch.
+watch_pages:
+  # Job boards
+  - { url: "https://brainporteindhoven.com/nl/ontdek-brainport/werken", kind: job, every_hours: 24, note: "Brainport Eindhoven" }
+  - { url: "https://www.makeitinthenorth.nl/", kind: job, every_hours: 24, note: "Make it in the North" }
+  - { url: "https://www.utrechtinternationalcenter.com/en/job-portal", kind: job, every_hours: 24, note: "Utrecht International Center" }
+  - { url: "https://jobs.workinsouthholland.nl/jobs", kind: job, every_hours: 24, note: "Work in South Holland" }
+  - { url: "https://jobs.techeurope.io/", kind: job, every_hours: 24, note: "Tech Europe jobs" }
+  - { url: "https://www.ycombinator.com/jobs", kind: job, every_hours: 24, note: "YC Work at a Startup" }
+  # PhDs
+  - { url: "https://www.academictransfer.com/en/jobs/?q=machine%20learning", kind: phd, every_hours: 24, note: "AcademicTransfer: ML" }
+  - { url: "https://www.academictransfer.com/en/jobs/?q=computer%20vision", kind: phd, every_hours: 24, note: "AcademicTransfer: CV" }
+  - { url: "https://www.academictransfer.com/en/jobs/?q=remote%20sensing", kind: phd, every_hours: 24, note: "AcademicTransfer: remote sensing" }
+  - { url: "https://ellis.eu/phd-postdoc", name: "ELLIS PhD Program", kind: phd, every_hours: 24 }
+  # Accelerators. A `name` makes the deadline agent track the program's batch deadlines automatically:
+  # daily until it finds the next one, then weekly. Add any program the same way.
+  - { url: "https://www.livetheresidency.com/", name: "The Residency", kind: accelerator, every_hours: 24 }
+  - { url: "https://www.ycombinator.com/apply", name: "Y Combinator", kind: accelerator, every_hours: 24 }
+  - { url: "https://www.antler.co/", name: "Antler", kind: accelerator, every_hours: 24 }
+  - { url: "https://utrechtinc.nl/", name: "UtrechtInc", kind: accelerator, every_hours: 24 }
+  - { url: "https://rockstart.com/", name: "Rockstart", kind: accelerator, every_hours: 24 }
+  - { url: "https://www.hightechxl.com/", name: "HighTechXL", kind: accelerator, every_hours: 24 }
+  - { url: "https://www.yesdelft.com/", name: "YES!Delft", kind: accelerator, every_hours: 24, note: "Delft deep-tech incubator (drones, space)" }
+  - { url: "https://www.joinef.com/", name: "Entrepreneur First", kind: accelerator, every_hours: 24 }
+
+# Deadline reminders (accelerator batches, PhD calls, postings, your own constraints.yaml deadlines)
+deadlines:
+  remind_days: [14, 7, 3, 1]
+  search_every_days: 7
+
+# Email alerts (send them to your job-alert inbox — the email agent reads them).
+# These sites can't be read without a browser, so subscribe to their job alerts instead:
+#   Welcome to the Jungle, EURES, werk.nl, Scaling Europe, ASML, Rabobank, ABN AMRO
+# PhD mailing lists: ai-robotics@googlegroups.com, rl-list@googlegroups.com, ml-news@googlegroups.com,
+#   CVNet, visionlist (visionscience.com)
+# Not used: welcome-to-nl.nl (info portal, no listings), startupmap.one (JavaScript only).

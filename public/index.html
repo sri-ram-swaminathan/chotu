@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chotu</title>
+<style>
+  :root { --bg:#f7f7f5; --card:#fff; --ink:#1b1b1a; --muted:#6b6b66; --line:#e4e3de; --accent:#2f6fde; --good:#1f9d55; --warn:#c98a00; --bad:#d64545; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#141413; --card:#1e1e1c; --ink:#ecebe6; --muted:#9a9993; --line:#33322f; --accent:#6c9cf0; } }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif; background:var(--bg); color:var(--ink); }
+  header { display:flex; align-items:center; gap:16px; padding:12px 20px; border-bottom:1px solid var(--line); background:var(--card); position:sticky; top:0; z-index:2; flex-wrap:wrap; }
+  header h1 { font-size:18px; margin:0; }
+  nav { display:flex; gap:4px; flex-wrap:wrap; }
+  nav button { border:0; background:none; color:var(--muted); padding:6px 10px; border-radius:6px; cursor:pointer; font:inherit; }
+  nav button.on { background:var(--bg); color:var(--ink); font-weight:600; }
+  main { max-width:1200px; margin:0 auto; padding:20px 16px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  .stat b { display:block; font-size:22px; }
+  .stat span { color:var(--muted); font-size:12px; }
+  h2 { font-size:15px; margin:22px 0 10px; }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-size:12px; color:var(--muted); font-weight:600; }
+  tr:last-child td { border-bottom:0; }
+  tr.click { cursor:pointer; } tr.click:hover td { background:var(--bg); }
+  .pill { display:inline-block; padding:1px 8px; border-radius:99px; font-size:12px; border:1px solid var(--line); white-space:nowrap; }
+  .confirmed { color:var(--good); border-color:var(--good); } .likely { color:var(--warn); border-color:var(--warn); } .blocked { color:var(--bad); border-color:var(--bad); }
+  .muted { color:var(--muted); }
+  input, select, textarea { font:inherit; padding:7px 10px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--ink); }
+  button.act { font:inherit; padding:7px 12px; border-radius:6px; border:1px solid var(--line); background:var(--card); color:var(--ink); cursor:pointer; }
+  button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+  .rec { display:grid; gap:6px; }
+  .rec h3 { margin:0; font-size:16px; }
+  pre { white-space:pre-wrap; font:13px/1.5 ui-monospace,Consolas,monospace; margin:0; }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:16px; } @media (max-width:800px){ .two { grid-template-columns:1fr; } }
+  dialog { border:1px solid var(--line); border-radius:12px; background:var(--card); color:var(--ink); max-width:820px; width:calc(100% - 32px); max-height:85vh; padding:20px; }
+  dialog::backdrop { background:rgba(0,0,0,.4); }
+  ul.tight { margin:4px 0; padding-left:18px; }
+  .bar { height:8px; background:var(--line); border-radius:4px; overflow:hidden; } .bar i { display:block; height:100%; background:var(--accent); }
+  svg text { fill:var(--muted); font-size:11px; }
+  .table-wrap { overflow-x:auto; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🧠 Chotu</h1>
+  <nav id="nav"></nav>
+  <button class="act" id="calBtn" style="margin-left:auto">📅 Calendar</button>
+  <span class="muted" id="status"></span>
+</header>
+<main id="main"></main>
+<dialog id="dlg"><div id="dlgBody"></div><div class="row" style="justify-content:flex-end;margin:16px 0 0"><button class="act" onclick="dlg.close()">Close</button></div></dialog>
+
+<script>
+const TABS = ["Today", "Jobs", "Applications", "Companies", "Prep", "System"];
+let tab = (() => { try { return localStorage.getItem("chotu.tab") || "Today"; } catch { return "Today"; } })();
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const dlg = $("#dlg");
+const CO_BANDS = { strong_apply: ["Strong apply", "confirmed"], apply: ["Apply", "confirmed"], maybe: ["Maybe", "likely"], skip: ["Skip", "blocked"] };
+function coCell(j) {
+  if (j.co_global == null) return '<span class="muted">–</span>';
+  const [label, cls] = CO_BANDS[j.co_band] || [j.co_band || "", ""];
+  return `<b>${Number(j.co_global).toFixed(1)}</b> <span class="pill ${cls}">${esc(label)}</span>${j.co_decision === "Research first" ? ' <span class="pill likely">research first</span>' : ""}`;
+}
+function coDetail(j) {
+  if (j.co_global == null) return '<p class="muted">career-ops: not scored yet (older score; it gets re-scored in the background).</p>';
+  const d = (n) => (n == null ? '<span class="muted">–</span>' : `<b>${n}</b>/5`);
+  let flags = []; try { flags = JSON.parse(j.co_red_flag_notes || "[]"); } catch {}
+  return `<div class="card" style="margin:8px 0"><b>career-ops</b> ${coCell(j)} · decision <b>${esc(j.co_decision || "")}</b>
+    · 🧭 ${j.co_archetype ? esc(j.co_archetype) : '<span class="muted">matches none of your archetypes</span>'}
+    <div class="muted" style="margin-top:4px">CV match ${d(j.co_cv_match)} · North Star ${d(j.co_north_star)} · Comp ${d(j.co_comp)} · Culture ${d(j.co_culture)} · Red flags ${d(j.co_red_flags)}
+    · posting legitimacy <b>${esc(j.co_legitimacy || "?")}</b> · evidence confidence <b>${esc(j.co_confidence || "?")}</b></div>
+    ${flags.length ? `<ul class="tight">${flags.map((f) => `<li>🚩 ${esc(f)}</li>`).join("")}</ul>` : ""}</div>`;
+}
+
+function token() {
+  let t; try { t = localStorage.getItem("chotu.token"); } catch {}
+  if (!t) { t = prompt("API token (API_TOKEN secret):"); try { localStorage.setItem("chotu.token", t); } catch {} }
+  return t;
+}
+async function api(path, opts = {}) {
+  const res = await fetch(path, { ...opts, headers: { "content-type": "application/json", authorization: "Bearer " + token(), ...(opts.headers || {}) } });
+  if (res.status === 401) { try { localStorage.removeItem("chotu.token"); } catch {} alert("Wrong token"); location.reload(); }
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || res.statusText);
+  return data;
+}
+const post = (path, body) => api(path, { method: "POST", body: JSON.stringify(body || {}) });
+$("#calBtn").onclick = async () => { location.href = (await api("/api/calendar-links")).web; };
+
+function renderNav() {
+  $("#nav").innerHTML = TABS.map((t) => `<button class="${t === tab ? "on" : ""}" data-t="${t}">${t}</button>`).join("");
+  $("#nav").querySelectorAll("button").forEach((b) => b.onclick = () => { tab = b.dataset.t; try { localStorage.setItem("chotu.tab", tab); } catch {} render(); });
+}
+async function render() {
+  renderNav();
+  $("#main").innerHTML = `<p class="muted">Loading…</p>`;
+  try { await VIEWS[tab](); } catch (e) { $("#main").innerHTML = `<div class="card">⚠️ ${esc(e.message)}</div>`; }
+}
+const visa = (v) => `<span class="pill ${esc(v)}">${{ confirmed: "sponsor", likely: "likely", unknown: "visa ?", blocked: "no visa" }[v] || "visa ?"}</span>`;
+const score = (x) => x == null ? `<span class="muted">–</span>` : `<b>${Number(x).toFixed(1)}</b>`;
+
+const VIEWS = {
+  async Today() {
+    const [s, recs, brief] = await Promise.all([api("/api/summary"), api("/api/recommendations?status=pending"), api("/api/brief")]);
+    const c = s.counts;
+    const calls = s.llm.reduce((a, r) => a + r.calls, 0);
+    $("#status").textContent = `LLM today: ${calls}/${s.budget}`;
+    $("#main").innerHTML = `
+      <div class="grid">
+        ${[["pending recs", c.pending], ["scored, waiting", c.scored], ["ranked (needs LLM)", c.ranked], ["applications", c.applications],
+           ["dossiers", c.dossiers], ["companies", c.companies], ["IND sponsors", c.sponsors], ["queued tasks", c.queued]]
+          .map(([k, v]) => `<div class="card stat"><b>${v ?? 0}</b><span>${k}</span></div>`).join("")}
+      </div>
+      <div class="row"><h2 style="margin:0">Recommendations</h2><button class="act" id="fill">Fill empty slots</button></div>
+      ${recs.length ? recs.map(recCard).join("") : `<div class="card muted">No pending recommendations. They refill at 08:00, or press “Fill empty slots”.</div>`}
+      <h2>Brief</h2><div class="card"><pre>${brief.html.replace(/<(?!\/?b>)[^>]+>/g, "")}</pre></div>`;
+    $("#fill").onclick = async () => { await post("/api/recommendations/fill"); render(); };
+    document.querySelectorAll("[data-decide]").forEach((b) => b.onclick = async () => {
+      const [id, decision] = b.dataset.decide.split("|");
+      const reason = decision === "ignored" ? prompt("Why? (interest / fit / visa / location / seniority / company)") || undefined : undefined;
+      const r = await post(`/api/recommendations/${id}/decide`, { decision, reason });
+      if (r.priorAtCompany?.length) alert(`Heads up: you already have ${r.priorAtCompany.length} application(s) at this company.`);
+      render();
+    });
+  },
+
+  async Jobs() {
+    $("#main").innerHTML = `
+      <div class="row">
+        <input id="q" placeholder="Full-text search (BM25)…" style="flex:1;min-width:200px">
+        <select id="stage"><option value="">all stages</option>${["ranked","scored","recommended","decided","filtered_out","score_failed"].map((s) => `<option>${s}</option>`).join("")}</select>
+        <select id="kind"><option value="">all kinds</option>${["job","internship","phd","accelerator","hackathon","event"].map((s) => `<option>${s}</option>`).join("")}</select>
+        <input id="addUrl" placeholder="Add job by URL" style="min-width:220px"><button class="act primary" id="add">Add</button>
+      </div>
+      <div class="two"><div class="card"><b>Fit × Interest</b><div id="scatter"></div></div><div class="card" id="filters"></div></div>
+      <h2>Jobs</h2><div class="table-wrap" id="jobs"></div>`;
+    const load = async () => {
+      const p = new URLSearchParams({ q: $("#q").value, stage: $("#stage").value, kind: $("#kind").value });
+      [...p.keys()].forEach((k) => !p.get(k) && p.delete(k));
+      const jobs = await api("/api/jobs?" + p);
+      $("#jobs").innerHTML = `<table><tr><th>Role</th><th>Company</th><th>Where</th><th>Visa</th><th>Fit</th><th>Int.</th><th title="career-ops global score (1-5) and band">career-ops</th><th>Stage</th></tr>
+        ${jobs.map((j) => `<tr class="click" data-job="${j.id}"><td>${esc(j.title)} ${j.kind !== "job" ? `<span class="pill">${esc(j.kind)}</span>` : ""}
+          ${j.summary ? `<div class="muted">${esc(j.summary).slice(0, 160)}</div>` : ""}</td><td>${esc(j.company)}</td><td>${esc(j.location || "")}</td>
+          <td>${visa(j.visa)}</td><td>${score(j.fit)}</td><td>${score(j.interest)}</td><td>${coCell(j)}</td><td><span class="pill">${esc(j.stage)}</span>
+          ${j.filter_reason ? `<div class="muted">${esc(j.filter_reason)}</div>` : ""}</td></tr>`).join("")}</table>`;
+      document.querySelectorAll("[data-job]").forEach((r) => r.onclick = () => showJob(r.dataset.job));
+      scatter(jobs.filter((j) => j.fit != null));
+    };
+    $("#q").onkeydown = (e) => e.key === "Enter" && load();
+    $("#stage").onchange = load; $("#kind").onchange = load;
+    $("#add").onclick = async () => { await post("/api/jobs", { url: $("#addUrl").value }); alert("Queued — you'll get a Telegram message when it's scored."); };
+    const s = await api("/api/summary");
+    $("#filters").innerHTML = `<b>Why jobs were filtered</b>` + s.filterReasons.map((r) => `<div class="row" style="margin:6px 0"><span style="width:140px">${esc(r.reason)}</span>
+      <div class="bar" style="flex:1"><i style="width:${Math.min(100, (r.n / Math.max(...s.filterReasons.map((x) => x.n))) * 100)}%"></i></div><span>${r.n}</span></div>`).join("");
+    await load();
+  },
+
+  async Applications() {
+    const apps = await api("/api/applications");
+    const STAT = ["intent","applied","outreach_sent","replied","interview","offer","rejected","withdrawn"];
+    $("#main").innerHTML = `
+      <div class="row"><input id="co" placeholder="Company you applied to outside Chotu"><button class="act" id="addApp">Log application</button></div>
+      <div class="grid">${STAT.map((s) => `<div class="card stat"><b>${apps.filter((a) => a.status === s).length}</b><span>${s}</span></div>`).join("")}</div>
+      <div class="table-wrap"><table><tr><th>Company</th><th>Role</th><th>Channel</th><th>Status</th><th>Updated</th><th></th></tr>
+      ${apps.map((a) => `<tr><td class="click" data-app="${a.id}"><b>${esc(a.company)}</b></td><td>${esc(a.title || "—")}</td><td>${esc(a.channel || "")}</td>
+        <td><select data-status="${a.id}">${STAT.map((s) => `<option ${s === a.status ? "selected" : ""}>${s}</option>`).join("")}</select></td>
+        <td class="muted">${esc(a.updated_at.slice(0, 10))}</td>
+        <td>${a.job_id ? `<button class="act" data-resume="${a.id}">${a.resume_id ? "Resume ↻" : "Tailor resume"}</button>` : ""}</td></tr>`).join("")}
+      </table></div>`;
+    $("#addApp").onclick = async () => {
+      const r = await post("/api/applications", { company: $("#co").value });
+      if (r.priorAtCompany.length) alert(`Note: ${r.priorAtCompany.length} earlier application(s) at this company.`);
+      render();
+    };
+    document.querySelectorAll("[data-status]").forEach((s) => s.onchange = async () => { await post(`/api/applications/${s.dataset.status}/events`, { type: s.value }); });
+    document.querySelectorAll("[data-resume]").forEach((b) => b.onclick = async () => { await post(`/api/applications/${b.dataset.resume}/resume`); alert("Tailoring — link arrives on Telegram."); });
+    document.querySelectorAll("[data-app]").forEach((c) => c.onclick = () => showApp(c.dataset.app));
+  },
+
+  async Companies() {
+    const cos = await api("/api/companies");
+    $("#main").innerHTML = `<div class="row"><input id="cf" placeholder="Filter…" style="flex:1"></div><div class="table-wrap"><table id="ct"></table></div>`;
+    const draw = () => {
+      const f = $("#cf").value.toLowerCase();
+      $("#ct").innerHTML = `<tr><th>Company</th><th>Region</th><th>Stage</th><th>IND</th><th>Jobs</th><th>Known</th><th>Researched</th></tr>` +
+        cos.filter((c) => !f || c.name.toLowerCase().includes(f) || (c.tags || "").includes(f)).map((c) => `<tr class="click" data-co="${c.id}">
+          <td><b>${esc(c.name)}</b> <span class="muted">${esc(c.domain || "")}</span></td><td>${esc(c.region || "")}</td><td>${esc(c.funded_stage || "")}</td>
+          <td>${c.ind_sponsor ? "✅" : ""}</td><td>${c.jobs}</td><td>${c.contacts || ""}</td><td class="muted">${c.researched_at ? c.researched_at.slice(0, 10) : "—"}</td></tr>`).join("");
+      document.querySelectorAll("[data-co]").forEach((r) => r.onclick = () => showCompany(r.dataset.co));
+    };
+    $("#cf").oninput = draw; draw();
+  },
+
+  async Prep() {
+    const { status, history } = await api("/api/prep");
+    const days = [...Array(84)].map((_, i) => new Date(Date.now() - (83 - i) * 864e5).toISOString().slice(0, 10));
+    $("#main").innerHTML = status.length ? status.map((p) => {
+      const h = new Map(history.filter((x) => x.item_id === p.id).map((x) => [x.day, x.amount]));
+      const max = Math.max(1, ...h.values());
+      return `<div class="card" style="margin-bottom:12px">
+        <div class="row" style="margin:0"><b>${esc(p.title)}</b><span class="muted">${esc(p.id)} · ${esc(p.unit)}</span>
+          <span style="margin-left:auto">today ${p.today}${p.dueToday != null ? "/" + p.dueToday : ""} · week ${p.week}${p.weekly_target ? "/" + p.weekly_target : ""} ${p.streak ? "· 🔥" + p.streak : ""}</span>
+          <input type="number" value="1" min="0" step="any" style="width:70px" id="amt-${p.id}"><button class="act" data-log="${p.id}">Log</button></div>
+        ${p.total_target ? `<div class="bar" style="margin:10px 0"><i style="width:${Math.min(100, (p.total / p.total_target) * 100)}%"></i></div>
+          <div class="muted">${p.total}/${p.total_target}${p.pacePerDay != null ? ` · need ${p.pacePerDay.toFixed(1)}/day to finish by ${p.deadline}` : ""}</div>` : ""}
+        <svg viewBox="0 0 ${12 * 13} ${7 * 13}" style="width:100%;max-width:400px;margin-top:10px">${days.map((d, i) => {
+          const v = h.get(d) || 0; return `<rect x="${Math.floor(i / 7) * 13}" y="${(i % 7) * 13}" width="11" height="11" rx="2"
+            fill="${v ? "var(--accent)" : "var(--line)"}" fill-opacity="${v ? 0.3 + 0.7 * (v / max) : 1}"><title>${d}: ${v}</title></rect>`; }).join("")}</svg>
+      </div>`; }).join("") : `<div class="card muted">No prep items yet — add them to profile/prep.yaml and run npm run sync-profile.</div>`;
+    document.querySelectorAll("[data-log]").forEach((b) => b.onclick = async () => {
+      await post("/api/prep/log", { item: b.dataset.log, amount: Number($("#amt-" + b.dataset.log).value) }); render();
+    });
+  },
+
+  async System() {
+    const [s, r, emails] = await Promise.all([api("/api/summary"), api("/api/runs"), api("/api/emails")]);
+    $("#main").innerHTML = `
+      <div class="row"><button class="act" id="tick">Run tick now</button><button class="act" id="daily">Run daily now</button><button class="act" id="retry">Retry failed tasks</button><button class="act" id="discover">Run discovery</button></div>
+      <div class="two">
+        <div><h2>LLM usage today (budget ${s.budget})</h2><table><tr><th>Provider</th><th>Purpose</th><th>Calls</th><th>Fails</th></tr>
+          ${s.llm.map((l) => `<tr><td>${esc(l.provider)}</td><td>${esc(l.purpose)}</td><td>${l.calls}</td><td>${l.failures || ""}</td></tr>`).join("") || `<tr><td colspan=4 class="muted">none</td></tr>`}</table></div>
+        <div><h2>Open tasks</h2><table><tr><th>Type</th><th>Status</th><th>Tries</th><th>Error</th></tr>
+          ${r.tasks.map((t) => `<tr><td>${esc(t.type)}</td><td>${esc(t.status)}</td><td>${t.attempts}</td><td class="muted">${esc((t.last_error || "").slice(0, 120))}</td></tr>`).join("") || `<tr><td colspan=4 class="muted">queue empty</td></tr>`}</table></div>
+      </div>
+      <h2>Recent runs</h2><div class="table-wrap"><table><tr><th>Kind</th><th>Started</th><th>Stats</th><th>Error</th></tr>
+        ${r.runs.map((x) => `<tr><td>${esc(x.kind)}</td><td class="muted">${esc(x.started_at.slice(5, 16).replace("T", " "))}</td><td><pre>${esc(x.stats || "")}</pre></td><td>${esc(x.error || "")}</td></tr>`).join("")}</table></div>
+      <h2>Recent emails</h2><div class="table-wrap"><table><tr><th>Subject</th><th>Category</th><th>Summary</th></tr>
+        ${emails.map((e) => `<tr><td>${esc(e.subject)}<div class="muted">${esc(e.from_addr)}</div></td><td>${esc(e.category || "queued")}</td><td>${esc(e.summary || "")}</td></tr>`).join("")}</table></div>`;
+    $("#tick").onclick = async () => { $("#tick").textContent = "Running…"; await post("/api/admin/tick"); render(); };
+    $("#daily").onclick = async () => { await post("/api/admin/daily"); render(); };
+    $("#retry").onclick = async () => { await post("/api/admin/retry-failed"); render(); };
+    $("#discover").onclick = async () => { await post("/api/admin/discover"); alert("Discovery running — results on Telegram."); };
+  },
+};
+
+function recCard(r) {
+  return `<div class="card rec" style="margin-bottom:10px">
+    <div class="row" style="margin:0"><span class="pill">${r.slot_type === "best" ? "🎯 best match" : "🧭 explore"}</span>${r.kind && r.kind !== "job" ? `<span class="pill">${esc(r.kind)}</span>` : ""}${visa(r.visa)}
+      ${r.deadline ? `<span class="pill">⏳ ${esc(r.deadline)}</span>` : ""}</div>
+    <h3>${esc(r.title || "Direct outreach")} — ${esc(r.company)}</h3>
+    <div class="muted">${esc(r.location || "")} ${r.fit != null ? `· Fit ${r.fit}/10 · Interest ${r.interest}/10` : ""}</div>
+    ${r.summary ? `<div>${esc(r.summary)}</div>` : ""}
+    <div class="row" style="margin:4px 0 0">
+      <button class="act primary" data-decide="${r.id}|applied">✅ Apply</button>
+      <button class="act" data-decide="${r.id}|ignored">❌ Ignore</button>
+      ${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">Open posting ↗</a>` : ""}
+      <a href="#" onclick="showCompany('${r.company_id}');return false">Company dossier</a>
+    </div></div>`;
+}
+
+function scatter(jobs) {
+  const W = 360, H = 240, P = 28, x = (v) => P + (v / 10) * (W - 2 * P), y = (v) => H - P - (v / 10) * (H - 2 * P);
+  $("#scatter").innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%">
+    <line x1="${x(5)}" y1="${y(0)}" x2="${x(5)}" y2="${y(10)}" stroke="var(--line)"/><line x1="${x(0)}" y1="${y(5)}" x2="${x(10)}" y2="${y(5)}" stroke="var(--line)"/>
+    <text x="${W - P}" y="${H - 8}" text-anchor="end">fit →</text><text x="6" y="${P - 10}">↑ interest</text>
+    <text x="${x(10)}" y="${y(10) + 12}" text-anchor="end">apply</text>
+    ${jobs.map((j) => `<circle cx="${x(j.fit)}" cy="${y(j.interest)}" r="5" fill="var(--accent)" fill-opacity=".6" style="cursor:pointer" onclick="showJob('${j.id}')"><title>${esc(j.title)} — ${esc(j.company)}</title></circle>`).join("")}
+  </svg>`;
+}
+
+async function showJob(id) {
+  const j = await api("/api/jobs/" + id);
+  const list = (s) => { try { return JSON.parse(s || "[]").map((x) => `<li>${esc(x)}</li>`).join(""); } catch { return ""; } };
+  $("#dlgBody").innerHTML = `<h3>${esc(j.title)} — ${esc(j.company)}</h3>
+    <div class="row">${visa(j.visa)}<span class="pill">${esc(j.stage)}</span>${j.url ? `<a href="${esc(j.url)}" target="_blank">posting ↗</a>` : ""}</div>
+    ${j.fit != null ? `<p>Fit <b>${j.fit}</b> · Interest <b>${j.interest}</b> · Combined <b>${Number(j.combined).toFixed(1)}</b> <span class="muted">(${esc(j.model)})</span></p><p>${esc(j.summary)}</p>
+      ${coDetail(j)}
+      <div class="two"><div><b>Evidence</b><ul class="tight">${list(j.fit_evidence)}${list(j.interest_evidence)}</ul></div><div><b>Gaps</b><ul class="tight">${list(j.fit_gaps)}</ul></div></div>` : ""}
+    <p class="muted">Seen on: ${j.postings.map((p) => esc(p.source)).join(", ")}</p>
+    <details><summary>Description</summary><pre>${esc(j.description || "")}</pre></details>`;
+  dlg.showModal();
+}
+
+async function showCompany(id) {
+  const { company: c, research, jobs, contacts, applications } = await api("/api/companies/" + id);
+  const d = research ? JSON.parse(research.dossier) : null;
+  const o = research?.outreach ? JSON.parse(research.outreach) : null;
+  const li = (xs) => (xs || []).map((x) => `<li>${esc(typeof x === "string" ? x : x.title ? `${x.title} (~${x.effort_days}d): ${x.description}` : `${x.name} — ${x.role}${x.why_contact ? ": " + x.why_contact : ""}`)}</li>`).join("");
+  $("#dlgBody").innerHTML = `<h3>${esc(c.name)} ${c.domain ? `<a href="https://${esc(c.domain)}" target="_blank" class="muted">${esc(c.domain)} ↗</a>` : ""}</h3>
+    <div class="row">${c.ind_sponsor ? `<span class="pill confirmed">IND sponsor</span>` : ""}${c.funded_stage ? `<span class="pill">${esc(c.funded_stage)}</span>` : ""}
+      <button class="act" id="reresearch">${d ? "Re-research" : "Research this company"}</button></div>
+    ${d ? `<p><b>${esc(d.one_liner)}</b></p><p>${esc(d.product)}</p>
+      <div class="two"><div><b>Facts</b><ul class="tight"><li>Stage: ${esc(d.stage)}</li><li>Funding: ${d.funding.total_eur ? "€" + Number(d.funding.total_eur).toLocaleString() : "?"} ${esc(d.funding.last_round || "")}</li>
+        <li>Investors: ${esc(d.funding.investors.join(", ") || "?")}</li><li>Team: ${esc(d.headcount_estimate)} · HQ ${esc(d.hq)}</li><li>Stack: ${esc(d.tech_stack.join(", "))}</li>
+        <li>Visa: ${esc(d.visa_assessment.verdict)} — ${esc(d.visa_assessment.reasoning)}</li></ul>
+        <b>People</b><ul class="tight">${li(d.people)}</ul>
+        ${contacts.length ? `<b>You know</b><ul class="tight">${contacts.map((p) => `<li><a href="${esc(p.url)}" target="_blank">${esc(p.first_name)} ${esc(p.last_name)}</a> — ${esc(p.position)}</li>`).join("")}</ul>` : ""}</div>
+        <div><b>Fit ${d.fit_for_me.score}/10</b><ul class="tight">${li(d.fit_for_me.reasons)}</ul><b>Interest ${d.interest_for_me.score}/10</b><ul class="tight">${li(d.interest_for_me.reasons)}</ul>
+        <b>Where you could help</b><ul class="tight">${li(d.pain_points_i_could_help_with)}</ul><b>Proof-of-work ideas</b><ul class="tight">${li(d.proof_of_work_ideas)}</ul>
+        ${d.red_flags.length ? `<b>Red flags</b><ul class="tight">${li(d.red_flags)}</ul>` : ""}</div></div>
+      <b>Recent news / hiring signals</b><ul class="tight">${li(d.recent_news)}${li(d.hiring_signals)}</ul>` : `<p class="muted">No dossier yet.</p>`}
+    ${o ? `<h3>✉️ Outreach draft → ${esc(o.recipient_name || o.recipient_role)} (${esc(o.channel)})</h3><div class="card"><b>${esc(o.subject)}</b><pre style="margin-top:8px">${esc(o.body)}</pre></div>
+      ${o.warm_intro_message ? `<h3>🤝 Warm intro ask</h3><div class="card"><pre>${esc(o.warm_intro_message)}</pre></div>` : ""}` : ""}
+    ${jobs.length ? `<h3>Jobs</h3><ul class="tight">${jobs.map((j) => `<li><a href="#" onclick="showJob('${j.id}');return false">${esc(j.title)}</a> <span class="muted">${esc(j.stage)} ${j.combined != null ? Number(j.combined).toFixed(1) : ""}</span></li>`).join("")}</ul>` : ""}
+    ${applications.length ? `<h3>Applications</h3><ul class="tight">${applications.map((a) => `<li>${esc(a.status)} via ${esc(a.channel)} (${esc(a.created_at.slice(0, 10))})</li>`).join("")}</ul>` : ""}`;
+  $("#reresearch").onclick = async () => { await post(`/api/companies/${id}/research`); alert("Research queued — Telegram will ping you."); };
+  dlg.showModal();
+}
+
+async function showApp(id) {
+  const a = await api("/api/applications/" + id);
+  $("#dlgBody").innerHTML = `<h3>${esc(a.company)} — ${esc(a.title || "outreach")}</h3>
+    ${a.resumeUrl ? `<p><a href="${esc(a.resumeUrl)}" target="_blank">📄 Tailored resume ↗</a></p>` : ""}
+    <ul class="tight">${a.events.map((e) => `<li><b>${esc(e.type)}</b> <span class="muted">${esc(e.at.slice(0, 16).replace("T", " "))} · ${esc(e.source || "")}</span> ${esc(e.note || "")}</li>`).join("")}</ul>
+    <div class="row"><input id="note" placeholder="Add a note…" style="flex:1"><button class="act" id="addNote">Add</button></div>`;
+  $("#addNote").onclick = async () => { await post(`/api/applications/${id}/events`, { type: "note", note: $("#note").value }); showApp(id); };
+  dlg.showModal();
+}
+
+render();
+</script>
+</body>
+</html>

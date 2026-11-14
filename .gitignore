@@ -1,0 +1,11 @@
+node_modules/
+.wrangler/
+.dev.vars
+.env
+dist/
+*.log
+# Your LinkedIn export contains other people's data — keep it out of git.
+profile/contacts.csv
+# Personal writing samples (style references) — keep them out of a public repo.
+profile/writing/*
+!profile/writing/README.md

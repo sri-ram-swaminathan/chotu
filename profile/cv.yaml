@@ -1,0 +1,96 @@
+# MASTER CV — the single source of truth for every CV Chotu tailors.
+# This is an EXAMPLE profile ("Alex Example"). Replace everything with your own details.
+# Tailored CVs only SELECT / REORDER / REWORD bullets from here (numbers can't be invented),
+# so add everything — even things that don't fit on one page.
+# Order entries newest first: tailored CVs keep this order.
+# `stack` prints after the title in the LaTeX CV ("Machine Learning Intern | Python, PyTorch").
+#
+# ⚠️ Privacy: if you fork this repo publicly, keep your real CV out of git
+#    (e.g. keep it in a private fork, or `git update-index --skip-worktree profile/cv.yaml`).
+
+basics:
+  name: "Alex Example"
+  headline: "MSc Data Science · Machine Learning & Computer Vision"
+  email: "you@example.com"
+  phone: "+00 000 000 000"
+  location: "Europe"
+  links:
+    - { label: "your-site.example", url: "https://your-site.example" }
+    - { label: "LinkedIn", url: "https://linkedin.com/in/your-handle" }
+    - { label: "GitHub", url: "https://github.com/your-handle" }
+
+summary: >
+  MSc Data Science student with a BSc in Mathematics. Hands-on experience applying deep learning
+  to real-world data during an internship, and builds LLM agents on the side.
+
+education:
+  - id: msc
+    title: "MSc. Data Science"
+    org: "Example University"
+    location: "Example City, Europe"
+    start: "Sep 2025"
+    end: "Aug 2027 (expected)"
+    bullets:
+      - "GPA: 8.0/10"
+      - "Coursework: Machine Learning, Data Mining, Optimization, NLP, Computer Vision"
+      - "Thesis: Uncertainty quantification for satellite-based forecasting"
+  - id: bsc
+    title: "BSc. Mathematics"
+    org: "Home University"
+    location: "Home City, Home Country"
+    start: "Aug 2021"
+    end: "Aug 2024"
+    bullets:
+      - "GPA: 9.0/10, graduated with honours"
+
+experience:
+  - id: ml-intern
+    title: "Machine Learning Intern"
+    org: "Example Research Institute"
+    location: "Example City, Europe"
+    start: "Feb 2026"
+    end: "Aug 2026"
+    stack: "Python, PyTorch, HuggingFace"
+    tags: [computer-vision, deep-learning, foundation-models]
+    bullets:
+      - "Fine-tuned vision foundation models for image classification on a small, imbalanced dataset"
+      - "Designed the data pre-processing, feature engineering and experiment validation pipeline"
+      - "Improved accuracy by 6 points over the existing baseline using contrastive pre-training"
+
+  - id: startup-research
+    title: "AI Research Assistant (part-time)"
+    org: "Example Startup"
+    location: "Remote"
+    start: "Sep 2025"
+    end: "Jan 2026"
+    stack: "Python, PyTorch"
+    tags: [startup, time-series, research]
+    bullets:
+      - "Worked in a small startup team, moving fast from research idea to working code"
+      - "Implemented an evaluation metric so the team could compare models on long-horizon behaviour"
+
+# Hackathons and side projects → the "Projects" section of the CV.
+projects:
+  - id: chotu
+    title: "Chotu"
+    org: "Multi-agent job-search assistant (personal project)"
+    stack: "TypeScript, LangGraph, Cloudflare Workers"
+    tags: [agents, multi-agent, llm, langgraph]
+    bullets:
+      - "Built a 24/7 multi-agent job-search assistant: search, research, alert, visa-check and recommender agents coordinated by a chat orchestrator on Telegram"
+      - "Designed a provider-agnostic LLM layer with fallback chains and a daily call budget to run on free tiers"
+
+  - id: hackathon-agent
+    title: "Finalist, Example AI Hackathon"
+    org: "Voice-driven personal assistant agent"
+    tags: [agents, voice, llm, hackathon]
+    bullets:
+      - "Built an agent that schedules tasks and resolves calendar conflicts from natural-language voice input"
+
+skills:
+  Languages: [Python, SQL, TypeScript]
+  "Data & ML": [pandas, scikit-learn, PyTorch, HuggingFace, LangGraph]
+  Tools: [Git, Docker, GitHub Actions]
+
+awards:
+  - "Finalist, Example AI Hackathon"

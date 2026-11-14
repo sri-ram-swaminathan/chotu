@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chotu Deadlines</title>
+<style>
+  :root {
+    --bg:#f7f7f5; --card:#fff; --ink:#1b1b1a; --muted:#6b6b66; --line:#e4e3de; --accent:#2f6fde;
+    --urgent:#d64545; --soon:#c98a00; --today-bg:#eef3fd;
+    --k-accelerator:#7c4dde; --k-phd:#1f8a70; --k-hackathon:#d9622b; --k-event:#2f6fde; --k-job:#3d7d1f; --k-personal:#b03a76;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#141413; --card:#1e1e1c; --ink:#ecebe6; --muted:#9a9993; --line:#33322f; --accent:#6c9cf0; --today-bg:#1f2a3d;
+      --k-accelerator:#a988f0; --k-phd:#4cc3a0; --k-hackathon:#f08c5a; --k-event:#6c9cf0; --k-job:#7cc455; --k-personal:#e27bb0; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif; background:var(--bg); color:var(--ink); }
+  header { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--line); background:var(--card); position:sticky; top:0; z-index:2; flex-wrap:wrap; }
+  header h1 { font-size:18px; margin:0; }
+  header a { color:var(--muted); text-decoration:none; font-size:13px; }
+  main { max-width:1200px; margin:0 auto; padding:16px; }
+  button { font:inherit; color:inherit; cursor:pointer; }
+  .btn { padding:6px 12px; border-radius:6px; border:1px solid var(--line); background:var(--card); }
+  .btn.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .seg { display:inline-flex; border:1px solid var(--line); border-radius:7px; overflow:hidden; }
+  .seg button { border:0; background:var(--card); padding:6px 12px; color:var(--muted); }
+  .seg button.on { background:var(--bg); color:var(--ink); font-weight:600; }
+  .spacer { margin-left:auto; }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; margin:0 0 14px; }
+  .chip { display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:99px; border:1px solid var(--line); background:var(--card); font-size:13px; }
+  .chip.off { opacity:.45; }
+  .dot { width:9px; height:9px; border-radius:50%; flex:none; background:var(--c); }
+  h2 { font-size:15px; margin:20px 0 10px; }
+  .muted { color:var(--muted); }
+
+  /* Coming up */
+  .soon { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:10px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px; text-align:left; border-left:4px solid var(--c); width:100%; }
+  .card b { display:block; }
+  .count { font-size:12px; font-weight:600; }
+  .count.urgent { color:var(--urgent); } .count.soonish { color:var(--soon); }
+  .empty { padding:18px; text-align:center; color:var(--muted); background:var(--card); border:1px dashed var(--line); border-radius:10px; }
+
+  /* Month */
+  .monthbar { display:flex; align-items:center; gap:8px; margin:20px 0 10px; }
+  .monthbar h2 { margin:0; min-width:150px; }
+  .month { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--line); gap:1px; }
+  .dow { background:var(--card); padding:6px 8px; font-size:12px; color:var(--muted); font-weight:600; }
+  .cell { background:var(--card); min-height:96px; padding:4px 5px; display:flex; flex-direction:column; gap:3px; min-width:0; }
+  .cell.out { background:var(--bg); } .cell.out .num { opacity:.45; }
+  .cell.today { background:var(--today-bg); }
+  .num { font-size:12px; color:var(--muted); }
+  .cell.today .num { color:var(--accent); font-weight:700; }
+  .ev { display:block; width:100%; text-align:left; border:0; border-radius:4px; padding:1px 5px; font-size:12px; line-height:1.4;
+        background:color-mix(in srgb, var(--c) 16%, transparent); color:var(--ink); border-left:3px solid var(--c);
+        white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ev.done { text-decoration:line-through; opacity:.55; }
+  .more { font-size:11px; color:var(--muted); border:0; background:none; text-align:left; padding:0 5px; }
+
+  /* List */
+  .agenda { background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .agenda .day { display:grid; grid-template-columns:88px minmax(0,1fr); border-bottom:1px solid var(--line); }
+  .agenda .day:last-child { border-bottom:0; }
+  .agenda .date { padding:10px; font-size:12px; color:var(--muted); border-right:1px solid var(--line); }
+  .agenda .date b { display:block; font-size:18px; color:var(--ink); }
+  .agenda .items { display:flex; flex-direction:column; }
+  .row { display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border:0; background:none; text-align:left; width:100%; }
+  .row + .row { border-top:1px solid var(--line); }
+  .row .dot { margin-top:5px; }
+  .row .what { flex:1; min-width:0; overflow-wrap:anywhere; }
+  body { overflow-x:hidden; }
+  .agenda .items, .soon, .card { min-width:0; }
+  .tag { font-size:11px; padding:0 6px; border-radius:99px; border:1px solid var(--line); color:var(--muted); white-space:nowrap; }
+  .tag.warn { color:var(--soon); border-color:var(--soon); }
+
+  dialog { border:1px solid var(--line); border-radius:12px; background:var(--card); color:var(--ink); width:min(520px, calc(100% - 32px)); padding:18px; }
+  dialog::backdrop { background:rgba(0,0,0,.4); }
+  dialog h3 { margin:4px 0 2px; font-size:17px; }
+  blockquote { margin:10px 0; padding:8px 12px; border-left:3px solid var(--line); color:var(--muted); font-size:13px; }
+  .actions { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; flex-wrap:wrap; }
+  .toast { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:var(--ink); color:var(--bg); padding:8px 14px; border-radius:8px; font-size:13px; opacity:0; transition:opacity .2s; pointer-events:none; }
+  .toast.on { opacity:1; }
+  @media (max-width:700px) {
+    .cell { min-height:58px; padding:3px; }
+    .ev { font-size:0; padding:0; height:6px; border-left-width:0; background:var(--c); }
+    .more { display:none; }
+    .dow { padding:4px; text-align:center; }
+    .agenda .day { grid-template-columns:64px minmax(0,1fr); }
+    header { gap:8px; }
+    header h1 { font-size:16px; }
+    .spacer { display:none; }
+    #subscribe { order:5; width:100%; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>📅 Deadlines</h1>
+  <a href="/">← Dashboard</a>
+  <span class="spacer"></span>
+  <div class="seg" id="viewSeg"><button data-v="month">Month</button><button data-v="list">List</button></div>
+  <button class="btn primary" id="subscribe">Add to my calendar</button>
+</header>
+<main>
+  <div class="chips" id="chips"></div>
+  <h2>Coming up · next 14 days</h2>
+  <div id="soon" class="soon"></div>
+  <div id="view"></div>
+  <div id="rolling"></div>
+</main>
+<dialog id="dlg"></dialog>
+<dialog id="subDlg">
+  <h3>Add these deadlines to your calendar</h3>
+  <p class="muted">Subscribe once; new deadlines appear automatically (calendar apps refresh every few hours).</p>
+  <div style="display:flex;gap:8px"><input id="icsUrl" readonly style="flex:1;min-width:0;font:13px ui-monospace,Consolas,monospace;padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)"><button class="btn" id="copyIcs">Copy</button></div>
+  <ul class="muted" style="font-size:13px;padding-left:18px">
+    <li><b>Google Calendar</b> (computer): Other calendars → + → From URL → paste.</li>
+    <li><b>iPhone</b>: Settings → Calendar → Accounts → Add Account → Other → Add Subscribed Calendar.</li>
+    <li><b>Outlook</b>: Add calendar → Subscribe from web.</li>
+  </ul>
+  <div class="actions"><a class="btn" id="webcal">Open in calendar app</a><button class="btn" onclick="subDlg.close()">Close</button></div>
+</dialog>
+<div class="toast" id="toast"></div>
+
+<script>
+const KINDS = {
+  accelerator: "🚀 Accelerators", phd: "🎓 PhDs", hackathon: "🛠 Hackathons", event: "📅 Events", job: "💼 Jobs", personal: "📌 Personal",
+};
+const color = (k) => `var(--k-${KINDS[k] ? k : "event"})`;
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const store = { get(k, d) { try { return JSON.parse(localStorage.getItem("chotu.cal." + k)) ?? d; } catch { return d; } },
+                set(k, v) { try { localStorage.setItem("chotu.cal." + k, JSON.stringify(v)); } catch {} } };
+
+// The signed key comes from the link Chotu sends (/calendar). Remember it so the bare URL works next time.
+const params = new URLSearchParams(location.search);
+let key = params.get("k") || store.get("key", null);
+if (params.get("k")) store.set("key", key);
+
+let data = { items: [], links: {}, today: new Date().toISOString().slice(0, 10) };
+let view = store.get("view", matchMedia("(max-width:700px)").matches ? "list" : "month");
+let hidden = new Set(store.get("hidden", []));
+let cursor = null; // first day of the month on screen
+
+const parse = (d) => new Date(d + "T00:00:00");
+const iso = (dt) => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+const daysUntil = (d) => Math.round((parse(d) - parse(data.today)) / 86400000);
+const fmt = (d, o) => parse(d).toLocaleDateString(undefined, o);
+function countdown(d) {
+  const n = daysUntil(d);
+  if (n === 0) return ["today", "urgent"];
+  if (n === 1) return ["tomorrow", "urgent"];
+  if (n < 0) return [`${-n} day${n === -1 ? "" : "s"} ago`, "muted"];
+  return [`in ${n} days`, n <= 3 ? "urgent" : n <= 7 ? "soonish" : "muted"];
+}
+const visible = () => data.items.filter((d) => !hidden.has(d.kind) && d.status !== "dismissed");
+
+async function load() {
+  if (!key) { $("main").innerHTML = `<div class="empty">Open this page from the link Chotu sends with <b>/calendar</b> in Telegram, or from the dashboard.</div>`; return; }
+  const res = await fetch(`/calendar.json?k=${encodeURIComponent(key)}`);
+  if (res.status === 403) { store.set("key", null); $("main").innerHTML = `<div class="empty">This calendar link has expired. Send <b>/calendar</b> to Chotu for a fresh one.</div>`; return; }
+  data = await res.json();
+  cursor ??= (() => { const t = parse(data.today); return new Date(t.getFullYear(), t.getMonth(), 1); })();
+  render();
+}
+
+function render() {
+  document.querySelectorAll("#viewSeg button").forEach((b) => b.classList.toggle("on", b.dataset.v === view));
+  const kindsPresent = [...new Set(data.items.map((d) => d.kind))];
+  $("#chips").innerHTML = Object.entries(KINDS).filter(([k]) => kindsPresent.includes(k)).map(([k, label]) => {
+    const n = data.items.filter((d) => d.kind === k && d.status !== "done").length;
+    return `<button class="chip ${hidden.has(k) ? "off" : ""}" data-k="${k}" style="--c:${color(k)}" aria-pressed="${!hidden.has(k)}"><span class="dot"></span>${label} <span class="muted">${n}</span></button>`;
+  }).join("");
+
+  const items = visible();
+  const soon = items.filter((d) => d.date && d.status !== "done" && daysUntil(d.date) >= -1 && daysUntil(d.date) <= 14);
+  $("#soon").innerHTML = soon.length ? soon.map((d) => {
+    const [txt, cls] = countdown(d.date);
+    return `<button class="card" data-id="${esc(d.id)}" style="--c:${color(d.kind)}">
+      <span class="count ${cls}">${txt} · ${fmt(d.date, { weekday: "short", day: "numeric", month: "short" })}</span>
+      <b>${esc(d.org)}</b><span class="muted">${esc(d.title)}</span></button>`;
+  }).join("") : `<div class="empty">Nothing due in the next two weeks.</div>`;
+
+  $("#view").innerHTML = view === "month" ? monthView(items) : listView(items);
+
+  const rolling = items.filter((d) => !d.date);
+  $("#rolling").innerHTML = rolling.length ? `<h2>Rolling / no fixed date</h2><div class="agenda"><div class="items">${rolling.map(rowHtml).join("")}</div></div>` : "";
+}
+
+function monthView(items) {
+  const y = cursor.getFullYear(), m = cursor.getMonth();
+  const start = new Date(y, m, 1); start.setDate(1 - ((start.getDay() + 6) % 7)); // back to Monday
+  const byDay = {};
+  for (const d of items) if (d.date) (byDay[d.date] ??= []).push(d);
+  let cells = "";
+  for (let i = 0; i < 42; i++) {
+    const day = new Date(start); day.setDate(start.getDate() + i);
+    if (i === 35 && day.getMonth() !== m) break; // 5 weeks are enough
+    const k = iso(day), evs = byDay[k] ?? [];
+    cells += `<div class="cell ${day.getMonth() !== m ? "out" : ""} ${k === data.today ? "today" : ""}">
+      <span class="num">${day.getDate()}</span>
+      ${evs.slice(0, 3).map((d) => `<button class="ev ${d.status === "done" ? "done" : ""}" data-id="${esc(d.id)}" style="--c:${color(d.kind)}" title="${esc(d.org)} — ${esc(d.title)}">${esc(d.org)}</button>`).join("")}
+      ${evs.length > 3 ? `<button class="more" data-day="${k}">+${evs.length - 3} more</button>` : ""}</div>`;
+  }
+  const dows = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => `<div class="dow">${d}</div>`).join("");
+  return `<div class="monthbar"><h2>${cursor.toLocaleDateString(undefined, { month: "long", year: "numeric" })}</h2>
+    <button class="btn" data-nav="-1" aria-label="Previous month">‹</button><button class="btn" data-nav="0">Today</button><button class="btn" data-nav="1" aria-label="Next month">›</button></div>
+    <div class="month">${dows}${cells}</div>`;
+}
+
+function rowHtml(d) {
+  const [txt, cls] = d.date ? countdown(d.date) : ["rolling", "muted"];
+  return `<button class="row" data-id="${esc(d.id)}" style="--c:${color(d.kind)}"><span class="dot"></span>
+    <span class="what"><b>${esc(d.org)}</b> — ${esc(d.title)}
+      <br><span class="count ${cls}">${txt}</span>
+      ${d.confidence === "unverified" ? ` <span class="tag warn">date unverified</span>` : ""}
+      ${d.status === "done" ? ` <span class="tag">done</span>` : ""}</span></button>`;
+}
+
+function listView(items) {
+  const upcoming = items.filter((d) => d.date && daysUntil(d.date) >= -3);
+  if (!upcoming.length) return `<h2>All upcoming</h2><div class="empty">No upcoming deadlines.</div>`;
+  const groups = {};
+  for (const d of upcoming) (groups[d.date] ??= []).push(d);
+  return `<h2>All upcoming</h2><div class="agenda">${Object.entries(groups).map(([day, ds]) => `
+    <div class="day"><div class="date"><b>${fmt(day, { day: "numeric" })}</b>${fmt(day, { month: "short", weekday: "short" })}</div>
+      <div class="items">${ds.map(rowHtml).join("")}</div></div>`).join("")}</div>`;
+}
+
+function openItem(id) {
+  const d = data.items.find((x) => x.id === id);
+  if (!d) return;
+  const link = d.source_url || d.job_url;
+  const [txt, cls] = d.date ? countdown(d.date) : ["rolling admissions", "muted"];
+  $("#dlg").innerHTML = `
+    <span class="chip" style="--c:${color(d.kind)}"><span class="dot"></span>${KINDS[d.kind] ?? d.kind}</span>
+    <h3>${esc(d.org)}</h3><div>${esc(d.title)}</div>
+    <p><b>${d.date ? fmt(d.date, { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "No fixed date"}</b> · <span class="count ${cls}">${txt}</span></p>
+    ${d.confidence === "unverified" ? `<p class="tag warn" style="display:inline-block">⚠️ Chotu couldn't verify this date in the source; check it before relying on it</p>` : ""}
+    ${d.evidence ? `<blockquote>“${esc(d.evidence)}”</blockquote>` : ""}
+    <div class="actions">
+      ${link ? `<a class="btn" href="${esc(link)}" target="_blank" rel="noopener">Open source ↗</a>` : ""}
+      ${d.status === "done" ? `<button class="btn" data-set="open">Reopen</button>` : `<button class="btn" data-set="dismissed">Dismiss</button><button class="btn primary" data-set="done">Mark done</button>`}
+      <button class="btn" data-close>Close</button>
+    </div>`;
+  $("#dlg").dataset.id = id;
+  $("#dlg").showModal();
+}
+
+async function setStatus(id, status) {
+  const res = await fetch(`/calendar/deadline/${encodeURIComponent(id)}?k=${encodeURIComponent(key)}`, {
+    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ status }),
+  });
+  if (!res.ok) return toast("Couldn't save — try again");
+  const d = data.items.find((x) => x.id === id); if (d) d.status = status;
+  $("#dlg").close(); render();
+  toast(status === "done" ? "Marked done" : status === "dismissed" ? "Dismissed — no more reminders" : "Reopened");
+}
+
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); setTimeout(() => t.classList.remove("on"), 1800); }
+
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-id],[data-k],[data-nav],[data-v],[data-set],[data-close],[data-day]");
+  if (!el) return;
+  if (el.dataset.set) return setStatus($("#dlg").dataset.id, el.dataset.set);
+  if (el.hasAttribute("data-close")) return $("#dlg").close();
+  if (el.dataset.id) return openItem(el.dataset.id);
+  if (el.dataset.day) { view = "list"; store.set("view", view); render(); return; }
+  if (el.dataset.k) { hidden.has(el.dataset.k) ? hidden.delete(el.dataset.k) : hidden.add(el.dataset.k); store.set("hidden", [...hidden]); return render(); }
+  if (el.dataset.nav) {
+    const n = Number(el.dataset.nav);
+    if (n === 0) { const t = parse(data.today); cursor = new Date(t.getFullYear(), t.getMonth(), 1); }
+    else cursor = new Date(cursor.getFullYear(), cursor.getMonth() + n, 1);
+    return render();
+  }
+  if (el.dataset.v) { view = el.dataset.v; store.set("view", view); render(); }
+});
+
+$("#subscribe").onclick = () => {
+  if (!data.links.ics) return;
+  $("#icsUrl").value = data.links.ics;
+  $("#webcal").href = data.links.ics.replace(/^https?:/, "webcal:");
+  $("#subDlg").showModal();
+};
+$("#copyIcs").onclick = async () => {
+  try { await navigator.clipboard.writeText($("#icsUrl").value); toast("Link copied"); }
+  catch { $("#icsUrl").select(); toast("Press Ctrl+C to copy"); }
+};
+
+load();
+</script>
+</body>
+</html>

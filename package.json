@@ -1,0 +1,33 @@
+{
+  "name": "chotu",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Chotu — a 24/7 professional second brain: job search, company research, outreach, prep tracking.",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --test-scheduled",
+    "dev:offline": "wrangler dev -c wrangler.offline.jsonc --test-scheduled",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test test/",
+    "db:migrate:local": "wrangler d1 migrations apply chotu --local",
+    "db:migrate:remote": "wrangler d1 migrations apply chotu --remote",
+    "sync-profile": "node scripts/sync-profile.mjs",
+    "telegram:webhook": "node scripts/set-telegram-webhook.mjs",
+    "sync-sponsors": "node scripts/import-sponsors.mjs",
+    "tick:local": "curl \"http://localhost:8787/__scheduled?cron=*/5+*+*+*+*\""
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0",
+    "@langchain/core": "^1.3.5",
+    "@langchain/langgraph": "^1.7.2",
+    "postal-mime": "^4.2.0",
+    "yaml": "^2.9.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261107.1",
+    "typescript": "^7.0.2",
+    "wrangler": "^4.158.0"
+  }
+}
