@@ -144,6 +144,46 @@ When you set up your own copy:
 - 🌐 `wrangler.jsonc` holds your D1 `database_id` and Worker URL. They aren't secret, but they identify your deployment.
 - 🔒 The dashboard and API need your `API_TOKEN`, and the Telegram bot only answers your own `TELEGRAM_CHAT_ID`.
 
+## 🌐 Make it work for your country
+
+Chotu ships set up for the **🇳🇱 Netherlands**: cities, Dutch-language dealbreakers, the `Europe/Amsterdam` timezone,
+and visa checks against the Dutch **IND register of recognised sponsors**. Moving to another country takes a few
+minutes with a coding agent such as Claude Code, Cursor or Codex.
+
+**What changes per country**
+
+| | Where | What to change |
+|---|---|---|
+| 📍 Locations | `profile/constraints.yaml` → `locations` | your target cities and country names |
+| 🗣️ Dealbreakers | `profile/constraints.yaml` → `dealbreaker_phrases` | e.g. `"fließend deutsch"` instead of `"fluent in dutch"` |
+| 🏢 Companies | `profile/targets.yaml` → `companies`, plus the alert sites at the bottom | local startups and their job boards |
+| ⏰ Timezone | `wrangler.jsonc` → `vars.TIMEZONE` and the `crons` | when your 11:00 brief arrives |
+| 🛂 Sponsor register | `src/sources/ind.ts`, `scripts/import-sponsors.mjs` | your country's official list, if it has one (e.g. the UK's register of licensed sponsors) |
+| 🗺️ Country check | `isNetherlandsLocation` in `src/pipeline/visa.ts` | which locations the register applies to |
+| 🤖 Prompts | `src/agents/visaAgent.ts`, `companyResearch.ts`, `discovery.ts` | country-specific visa wording and search queries |
+| 📚 Prep | `profile/prep.yaml` | e.g. swap the Dutch course for a German one |
+
+If your country has no public sponsor register, Chotu still works: the visa agent falls back to web evidence, and
+funded startups are still flagged as worth pitching.
+
+**Paste this into your agent** from the repo root, with the country filled in:
+
+```text
+Adapt Chotu from the Netherlands to <COUNTRY> (main cities: <CITIES>).
+1. Update profile/constraints.yaml (locations, dealbreaker_phrases), profile/targets.yaml
+   (replace Dutch companies with ~20 relevant <COUNTRY> companies, verify their ATS slugs),
+   profile/prep.yaml, and TIMEZONE + crons in wrangler.jsonc so the brief arrives at 11:00 local.
+2. Find out whether <COUNTRY> publishes an official register of visa-sponsoring employers.
+   If it does, make src/sources/ind.ts and scripts/import-sponsors.mjs import it instead of the
+   IND register. If it doesn't, rely on the web-evidence path in src/agents/visaAgent.ts.
+3. Generalise isNetherlandsLocation in src/pipeline/visa.ts to the new country, and update the
+   Dutch-specific wording in visaAgent.ts, companyResearch.ts and discovery.ts.
+4. Keep the existing column names (ind_sponsor etc.) to avoid a migration, run
+   `npm test && npm run typecheck`, and summarise what you changed.
+```
+
+Then run `npm run sync-profile` and `npm run sync-sponsors` again, and redeploy with `npx wrangler deploy`. 🚀
+
 ## 🙏 Credits
 
 - Scoring rubric ported from [career-ops](https://github.com/career-ops-hq/career-ops).
